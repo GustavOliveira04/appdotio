@@ -1,42 +1,49 @@
 let rowCount = 0;
 const container = document.getElementById('rows-container');
-const totalEl = document.getElementById('total-value');
+const totalVolumeEl = document.getElementById('total-volume');
+const totalCbuqEl = document.getElementById('total-cbuq');
 
 function readValue(input){
   const raw = (input.value || '').replace(',', '.');
   return parseFloat(raw) || 0;
 }
 
+function truncate(n, decimals){
+  const factor = Math.pow(10, decimals);
+  return Math.trunc(n * factor) / factor;
+}
+
 function formatNum(n){
-  return n.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return truncate(n, 4).toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
 }
 
 function addRow(){
-  rowCount++;
-  const id = rowCount;
   const card = document.createElement('div');
   card.className = 'row-card';
-  card.dataset.id = id;
   card.innerHTML = `
     <div class="row-head">
-      <span>Linha ${id}</span>
+      <span class="row-title">Estaca</span>
       <button class="remove-btn" type="button">Remover</button>
     </div>
     <div class="fields">
       <div class="field">
         <label>Bordo Esq.</label>
-        <input type="text" inputmode="decimal" class="bordo" placeholder="0,00">
+        <input type="text" inputmode="decimal" class="bordo-pos" placeholder="0,000">
       </div>
       <div class="field">
         <label>Eixo</label>
-        <input type="text" inputmode="decimal" class="eixo" placeholder="0,00">
+        <input type="text" inputmode="decimal" class="eixo" placeholder="0,000">
       </div>
       <div class="field">
         <label>Bordo Dir.</label>
-        <input type="text" inputmode="decimal" class="valor3" placeholder="0,00">
+        <input type="text" inputmode="decimal" class="bordo-neg" placeholder="0,000">
       </div>
     </div>
-    <div class="row-result">Resultado: <b class="row-val">0.00</b></div>
+    <div class="row-result">
+      <span>Área: <b class="row-area">0,000 m²</b></span>
+      <span>Vol. acum.: <b class="row-vol">0,000 m³</b></span>
+      <span>CBUQ acum.: <b class="row-cbuq">0,000 ton</b></span>
+    </div>
   `;
   container.appendChild(card);
 
@@ -52,23 +59,49 @@ function addRow(){
 }
 
 function calculateAll(){
-  let total = 0;
-  document.querySelectorAll('.row-card').forEach(card => {
+  const densidade = readValue(document.getElementById('cfg-densidade'));
+  const espacamento = 20;
+  const distB = 2;
+  const distN = 1.6;
+  const semiDist = espacamento / 2;
+
+  let prevArea = null;
+  let volumeAcumulado = 0;
+  const cards = document.querySelectorAll('.row-card');
+
+  cards.forEach((card, idx) => {
+    card.querySelector('.row-title').textContent = 'Estaca ' + idx;
+
+    const bordoPos = readValue(card.querySelector('.bordo-pos'));
     const eixo = readValue(card.querySelector('.eixo'));
-    const bordo = readValue(card.querySelector('.bordo'));
-    const valor3 = readValue(card.querySelector('.valor3'));
-    const result = eixo * bordo * valor3 * 20;
-    card.querySelector('.row-val').textContent = formatNum(result);
-    total += result;
+    const bordoNeg = readValue(card.querySelector('.bordo-neg'));
+
+    const areaParcial = (bordoPos + eixo) / 2 * distB + (eixo + bordoNeg) / 2 * distN;
+
+    if (prevArea !== null){
+      const areaAcumulada = prevArea + areaParcial;
+      const volumeParcial = areaAcumulada * semiDist;
+      volumeAcumulado += volumeParcial;
+    }
+    prevArea = areaParcial;
+
+    card.querySelector('.row-area').textContent = formatNum(areaParcial) + ' m²';
+    card.querySelector('.row-vol').textContent = formatNum(volumeAcumulado) + ' m³';
+    card.querySelector('.row-cbuq').textContent = formatNum(volumeAcumulado * densidade) + ' ton';
   });
-  totalEl.textContent = formatNum(total);
+
+  totalVolumeEl.textContent = formatNum(volumeAcumulado) + ' m³';
+  totalCbuqEl.textContent = formatNum(volumeAcumulado * densidade) + ' ton';
 }
+
+document.getElementById('cfg-densidade').addEventListener('input', calculateAll);
 
 const addBtn = document.createElement('button');
 addBtn.className = 'add-btn';
 addBtn.type = 'button';
-addBtn.textContent = '+ Adicionar linha';
+addBtn.textContent = '+ Adicionar estaca';
 addBtn.addEventListener('click', addRow);
-container.appendChild(addBtn);
+document.querySelector('main').appendChild(addBtn);
 
+addRow();
 addRow();

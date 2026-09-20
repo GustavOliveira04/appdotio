@@ -3,22 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculadora de Volume</title>
-<link rel="icon" href="./img/favicon.jpg" type="image/x-icon">
+<title>Volume de CBUQ</title>
 <link rel="stylesheet" href="./styles/styles.css">
 <script src="./scripts/scripts.js" defer></script>
 </head>
 <body>
 <header>
-  <h1>Volume do Perfil da Rodovia</h1>
-  <p>Volume do perfil da rodovia — Bordo Esq. × Eixo × Bordo Dir. × 20 (valores em metros)</p>
+  <h1>Volume de CBUQ</h1>
+  <p>Cálculo baseado na planilha: área por estaca, volume pelo método das áreas médias e total em toneladas.</p>
 </header>
 
-<main id="rows-container"></main>
+<main>
+  <div class="config-card">
+    <div class="config-title">Parâmetro</div>
+    <div class="config-grid" style="grid-template-columns:1fr;">
+      <div class="config-field">
+        <label>Densidade (ton/m³)</label>
+        <input type="text" inputmode="decimal" id="cfg-densidade" value="2,55">
+      </div>
+    </div>
+  </div>
+
+  <div id="rows-container"></div>
+</main>
 
 <div class="total-bar">
-  <span class="label">Total geral</span>
-  <span class="value" id="total-value">0.00</span>
+  <div class="total-stat">
+    <span class="label">Volume total</span>
+    <span class="value" id="total-volume">0,00 m³</span>
+  </div>
+  <div class="total-stat">
+    <span class="label">CBUQ total</span>
+    <span class="value" id="total-cbuq">0,00 ton</span>
+  </div>
 </div>
+
+<script>/* ...JS abaixo... */</script>
 </body>
 </html>
